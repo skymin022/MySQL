@@ -1,54 +1,5 @@
 -- Active: 1745889744480@@127.0.0.1@3306@employees
--- Active:
-
--- 전체 실행 : Ctrl + Shift + Enter
--- 커서 실행 : Ctrl + Enter
-SELECT *
-FROM board;
-
--- 중복 제거
-SELECT DISTINCT title
-FROM titles;
-
-USE aloha;
-SELECT emp_no
-			,name
-			,dept_no
-			,salary
-			,ROW_NUMBER() OVER (
-					PARTITION BY dept_no
-					ORDER BY salary DESC
-			) AS '부서별 급여 순위'
-FROM employees;
-
-SELECT emp_no
-			,name
-			,dept_no
-			,salary
-			,RANK() OVER (
-					PARTITION BY dept_no
-					ORDER BY salary DESC
-			) AS '부서별 급여 순위'
-FROM employees;
-
--- 1. 부서별 사원수
-SELECT de.dept_no, COUNT(*)
-FROM dept_emp de
-WHERE de.from_date <= CURRENT_DATE and de.to_date >= CURRENT_DATE
-GROUP BY de.dept_no
-;
-
--- 2. 부서별 최고급여 구하기
-SELECT de.dept_no, MAX(s.salary) as '최고급여'
-FROM dept_emp de
-    JOIN salaries s ON de.emp_no = s.emp_no
-WHERE de.from_date <= CURRENT_DATE and de.to_date >= CURRENT_DATE
-GROUP BY de.dept_no
-;
-
--- 1,2를 임시테이블로 조회,
--- 부서별로 최고급여를 받는 사원정보를 출력하시오
--- 이름, 성, 급여, 부서명, 사원수
+-- 부서별 최고급여를 받는 사원과 그 부서의 사원수를 조회하시오.
 WITH dept_count AS (
     SELECT de.dept_no, COUNT(*) emp_count
     FROM dept_emp de
@@ -73,18 +24,6 @@ WHERE s.salary = ds.max_salary
 ;
 
 -- 상사-직원 관계 조회
-
--- 1. 상사 조회
-SELECT *
-FROM employees e
-    JOIN dept_manager dm ON e.emp_no = dm.emp_no
-;
--- 2. 부하정보 조회
-SELECT *
-FROM employees e
-WHERE e.emp_no NOT IN (SELECT emp_no FROM dept_manager)
-;
-
 WITH emp_mgr AS (
     SELECT de.dept_no
         ,e.first_name, e.emp_no, e.last_name, e.gender
